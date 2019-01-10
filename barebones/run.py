@@ -10,4 +10,4 @@ from app import app, SERVER_IP
 
 
 if __name__ == "__main__":
-    app.run(host=SERVER_IP)
+    app.run(host=SERVER_IP, debug=True)

@@ -1,3 +1,7 @@
+"""
+Creates the database file and adds some stub data.
+"""
+
 import model
 from app import db
 
