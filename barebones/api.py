@@ -138,7 +138,7 @@ def product(product_id):
         }), 200
 
 
-@app.route("/api/shopping_carts/", methods=['POST'])
+@app.route("/api/shopping_cart/", methods=['POST'])
 def shopping_carts():
     """
         POST: Create a new shopping cart
@@ -147,7 +147,7 @@ def shopping_carts():
     return jsonify(shopping_cart.as_dict()), 200
 
 
-@app.route("/api/shopping_carts/<int:shopping_cart_id>",
+@app.route("/api/shopping_cart/<int:shopping_cart_id>",
            methods=['GET', 'PUT'])
 def shopping_cart(shopping_cart_id):
     """
