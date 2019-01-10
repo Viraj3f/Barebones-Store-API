@@ -201,7 +201,7 @@ ShoppingCart with code 200
 **Method**
 `GET`
 
-**params**
+**Params**
 `use-cache: int // 0 is false, anything else or unspecified is true.`
 
 **Return Value**
@@ -232,6 +232,38 @@ Message with code 200
 Code 200 if id found
 {} with code 404 if id not found
 ```
+
+------
+
+**Endpoint**
+`/api/shopping_cart/<int:shopping_cart_id>`
+
+**Method**
+`PUT`
+
+**Content Schema**
+```
+{
+    "product_id": int, // product to put in shopping cart
+    "quantity": int // quantity to put in shopping cart
+}
+```
+
+**Return Value**
+```
+ShoppingCart with 200 if valid method
+Message with code 404 if product id doesn't exist.
+Message with code 500 if quantity is greater than the number of availible products.
+```
+
+**Explanation**
+```
+Adds a product to the shopping cart. If the quantity is set to 0, it's the equivalent of removing it
+from the shopping cart. If the product is already in the shopping cart, the quantity is modified and the 
+cost is recalculated.
+```
+
+------
 
 ## API Model Schema
 <a name="api-model-schema"/>
