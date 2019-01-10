@@ -1,8 +1,8 @@
 import bcrypt
 from flask import request, jsonify
 
-from model import Producer, Product, ShoppingCart, ShoppingCartEntry
 from app import app, db
+from model import Producer, Product, ShoppingCart, ShoppingCartEntry
 
 
 @app.route("/api/producer", methods=['POST'])
