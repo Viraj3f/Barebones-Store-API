@@ -4,20 +4,30 @@
 ## Features
 
 ## API Endpoints
-Endpoint | /api/producer |
-Method | POST |
-Content Schema | `{"username": string, "password": string}`
-Return Value | `Producer`
-Explanation | Creates a new producer and returns the schema for it.
+**Endpoint**
+`/api/producer`
+**Method**
+`POST`
+**Content Schema**
+`{"username": string, "password": string}`
+**Return Value**
+`Producer`
+**Explanation**
+Creates a new producer and returns the schema for it.
 
-Endpoint | /api/producer |
-Method | GET |
-Params | None
-Return Value | `[Array of Produceer]`
-Explanation | Return schema of all the producers and associated products
+**Endpoint**
+`/api/producer`
+**Method**
+`GET`
+**Params**
+`None`
+**Return Value**
+`[Array of Producer]`
+**Explanation**
+Returns all producers
 
 ## API Model Schema
-*Producer*
+**Producer**
 ```
 {
     "id": int, // id of producer
@@ -26,7 +36,7 @@ Explanation | Return schema of all the producers and associated products
 }
 ```
 
-*Product*
+**Product**
 ```
 {
     "id": int, // id of product
@@ -37,7 +47,7 @@ Explanation | Return schema of all the producers and associated products
 }
 ```
 
-*Shopping Cart*
+**Shopping Cart**
 ```
 {
     "id": int, // id of shopping cart
@@ -49,7 +59,7 @@ Explanation | Return schema of all the producers and associated products
 }
 ```
 
-*ShoppingCartEntry*
+**ShoppingCartEntry**
 ```
 {
     "id": int, // id of shopping cart entry
