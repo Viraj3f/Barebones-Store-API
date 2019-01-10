@@ -6,23 +6,33 @@
 ## API Endpoints
 **Endpoint**
 `/api/producer`
+
 **Method**
 `POST`
+
 **Content Schema**
 `{"username": string, "password": string}`
+
 **Return Value**
 `Producer`
+
 **Explanation**
 Creates a new producer and returns the schema for it.
 
+-------
+
 **Endpoint**
 `/api/producer`
+
 **Method**
 `GET`
+
 **Params**
 `None`
+
 **Return Value**
 `[Array of Producer]`
+
 **Explanation**
 Returns all producers
 
