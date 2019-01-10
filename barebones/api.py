@@ -6,11 +6,11 @@ import bcrypt
 from flask import request, jsonify
 
 from app import app, db
-from model import Producer, Product, ShoppingCart, ShoppingCartEntry
+from model import Producer, Product, ShoppingCart
 
 
 @app.route("/api/producer", methods=['POST', 'GET'])
-def producer():
+def producers():
     """
         POST: Creates a new producer.
     """
@@ -37,7 +37,7 @@ def producer():
 
 
 @app.route("/api/producer/<int:producer_id>", methods=['GET'])
-def producer_get(producer_id):
+def producer(producer_id):
     """
         GET: Creates a new producer.
     """
@@ -88,7 +88,7 @@ def products():
         # Select matchin prodcuts whose inventory is greater than a specified
         # minimum value.
         arg = request.args.get('min-inventory-count')
-        min_inventory_count = 0
+        min_inventory_count = 1
         if arg is not None:
             min_inventory_count = int(arg)
         filtered = Product \
@@ -138,36 +138,77 @@ def product(product_id):
         }), 200
 
 
-@app.route("/api/shopping_cart/", methods=['POST'])
+@app.route("/api/shopping_cart", methods=['POST'])
 def shopping_carts():
     """
         POST: Create a new shopping cart
     """
     shopping_cart = ShoppingCart(cached_price=0)
+    db.session.add(shopping_cart)
+    db.session.commit()
     return jsonify(shopping_cart.as_dict()), 200
 
 
 @app.route("/api/shopping_cart/<int:shopping_cart_id>",
-           methods=['GET', 'PUT'])
+           methods=['GET', 'PUT', 'DELETE'])
 def shopping_cart(shopping_cart_id):
     """
         GET: Return a specific shopping cart
         PUT: Update the shopping cart
+        DELETE: Delete the shopping cart
     """
+    shopping_cart = ShoppingCart.query.get(shopping_cart_id)
+    content = request.get_json()
+
+    if shopping_cart is None:
+        return jsonify({}), 404
+
     if request.method == "GET":
-        shopping_cart = ShoppingCart.query.get(shopping_cart_id)
-        if shopping_cart is None:
+        print("OH HO")
+        arg = request.args.get('use-cache')
+        if arg and int(arg) == 0:
+            print("HEHE")
+            shopping_cart.recalculate_price()
+        db.session.commit()
+
+        return jsonify(shopping_cart.as_dict()), 200
+    elif request.method == "DELETE":
+        # Delete the shopping cart
+        db.session.delete(shopping_cart)
+        db.session.commit()
+        return jsonify({
+            "message": "Deleted shopping with id: '{}'"
+            .format(shopping_cart_id)
+        }), 200
+
+    elif request.method == "PUT":
+        assert "product_id" in content
+        assert "quantity" in content
+
+        # Find the associated product to add or modify in shopping cart
+        product = Product.query.get(content["product_id"])
+        if product is None:
+            return {"message": "Product not found"}, 404
+
+        shopping_cart.create_or_modify_shopping_cart_entry(
+                product,
+                content["quantity"])
+
+        db.session.commit()
+
+        return jsonify(shopping_cart.as_dict()), 200
 
 
-
-    elif request.method == "POST":
-        pass
-
-
-@app.route("/api/checkout/<int:shopping_cart_id>", methods=['POST'])
-def checkout():
+@app.route("/api/shopping_cart/<int:shopping_cart_id>/checkout",
+        methods=['POST'])
+def checkout(shopping_cart_id):
     """
-        GET: Return a specific shopping cart
-        PUT: Update the shopping cart
+        POST: Return a specific shopping cart
     """
+    return "Hello!"
+
+
+@app.route("/")
+def welcome():
+    # Simple welcome message for debugging
     return "Hello!"

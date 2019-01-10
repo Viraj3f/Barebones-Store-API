@@ -1,6 +1,8 @@
 # Barebones Shopping Store
 ### By Viraj Bangari
 
+A barebones shopping API that supports multiple producers, products and shopping carts.
+
 ## Table of Contents
 
 [Features](#features)
@@ -15,6 +17,17 @@
 
 ## Features
 <a name="features"/>
+
+* Statless RESTful API.
+* ORM that can be used with any production grade RDMS. (default: SQLite)
+* Supports producers, who can create an account and start creating products.
+* Producers can update the price, quantity and title of their products.
+* Producers can delete their prodicuts.
+* Allows for GETing all products, filtering by their quantity.
+* Allows the creation and deletion of shopping carts, which can contain multiple products and can have the total price cached.
+* Shopping carts do not require an account and are secured using API tokens.
+* Concurrency-safe when checking out a shopping cart.
+* Integration tested
 
 ## API Endpoints
 <a name="api-endpoints"/>
@@ -84,7 +97,7 @@ Returns a producer with the matching id.
 **Method**
 `GET`
 
-**Params**
+**params**
 `min-inventory-count: int`
 
 **Return Value**
@@ -93,7 +106,7 @@ Returns a producer with the matching id.
 ```
 
 **Explanation**
-Returns all products whose inventory count is greater than the specified parameter. If no parameter is included, all products are returned.
+Returns all products whose inventory count is greater than the specified parameter. If no parameter is included, it is as if min-inventory-count is set to 1.
 
 -------
 
@@ -150,16 +163,14 @@ Overwrites the attributes of a product with the specified attributes in the cont
 ------
 
 **Endpoint**
-```
-/api/products/<int:product_id>
-```
+`/api/products/<int:product_id> `
 
 **Method**
 `DELETE`
 
 **Return Value**
 ```
-Product with code 200 if id not found
+Code 200 if id found
 {} with code 404 if id not found
 ```
 
@@ -181,6 +192,46 @@ ShoppingCart with code 200
 
 **Explanation**
 `Creates a new shopping cart.`
+
+------
+
+**Endpoint**
+`/api/shopping_cart/<int:shopping_cart_id>`
+
+**Method**
+`GET`
+
+**params**
+`use-cache: int // 0 is false, anything else or unspecified is true.`
+
+**Return Value**
+```
+ShoppingCart with code 200
+```
+
+**Explanation**
+```
+Returns the shopping cart with the cached price. If use-cache is set to False, then the total price is recomputed by traversing through the list of products. This will only be an issue if a producer changes the price of a product while it is in a shopping cart.
+```
+
+------
+
+**Endpoint**
+`/api/shopping_cart/<int:shopping_cart_id>`
+
+**Method**
+`DELETE`
+
+**Return Value**
+```
+Message with code 200
+```
+
+**Explanation**
+```
+Code 200 if id found
+{} with code 404 if id not found
+```
 
 ## API Model Schema
 <a name="api-model-schema"/>

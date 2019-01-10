@@ -77,7 +77,7 @@ class ShoppingCart(db.Model, Serializable):
     cached_price = db.Column(db.Integer)
 
     # One to many relationship
-    shopping_cart_entries = db.relationship("shopping_cart_entry")
+    shopping_cart_entries = db.relationship("ShoppingCartEntry")
 
     def as_dict(self):
         d = {
@@ -88,6 +88,43 @@ class ShoppingCart(db.Model, Serializable):
 
         for entry in self.shopping_cart_entries:
             d["shopping_cart_entries"].append(entry.as_dict())
+
+        return d
+
+    def recalculate_price(self):
+        new_price = 0
+        for entry in self.shopping_cart_entries:
+            quantity = entry.quantity
+            price = entry.product.price
+            new_price += quantity * price
+
+        print("NUU", new_price)
+
+        self.cached_price = new_price
+
+    def create_or_modify_shopping_cart_entry(self, product, quantity):
+        assert 0 <= quantity <= product.inventory_count
+
+        for entry in self.shopping_cart_entries:
+            if entry.product_id == product.id:
+                self.cached_price = \
+                    ShoppingCart.cached_price - entry.quantity * product.price
+                if quantity == 0:
+                    db.session.delete(entry)
+                else:
+                    entry.quantity = quantity
+                    self.cached_price = \
+                        ShoppingCart.cached_price + quantity * product.price
+                return
+
+        if quantity > 0:
+            entry = ShoppingCartEntry(
+                    shopping_cart_id=self.id,
+                    quantity=quantity,
+                    product_id=product.id)
+            self.cached_price = \
+                ShoppingCart.cached_price + quantity * product.price
+            db.session.add(entry)
 
 
 class ShoppingCartEntry(db.Model, Serializable):
