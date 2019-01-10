@@ -1,9 +1,23 @@
 # Barebones Shopping Store
-## By Viraj Bangari
+### By Viraj Bangari
+
+## Table of Contents
+
+[Features](#features)
+
+[API Endpoints](#api-endpoints)
+
+[API Model Schema](#api-model-schema)
+
+[Souce Code Explanation](#source-code-explanation)
+
+[How to run](#how-to-run)
 
 ## Features
+<a name="features"/>
 
 ## API Endpoints
+<a name="api-endpoints"/>
 Note: all API endpoints will return a 500 error code on schema error.
 
 **Endpoint**
@@ -14,11 +28,11 @@ Note: all API endpoints will return a 500 error code on schema error.
 
 **Content Schema**
 ```
-{"username": string, "password": string} with code 200
+{"username": string, "password": string}
 ```
 
 **Return Value**
-`Producer`
+`Producer with code 200`
 
 **Explanation**
 Creates a new producer and returns the schema for it.
@@ -136,7 +150,9 @@ Overwrites the attributes of a product with the specified attributes in the cont
 ------
 
 **Endpoint**
-`/api/products/<int:product_id>`
+```
+/api/products/<int:product_id>
+```
 
 **Method**
 `DELETE`
@@ -167,6 +183,8 @@ ShoppingCart with code 200
 `Creates a new shopping cart.`
 
 ## API Model Schema
+<a name="api-model-schema"/>
+
 **Producer**
 ```
 {
@@ -214,16 +232,20 @@ ShoppingCart with code 200
 
 
 ## Souce Code Explanation
+<a name="source-code-explanation"/>
+
 ```
 barebones/model.py - The database models - Producer, Product, ShoppingCart, ShoppingCartEntry
 barebones/api.py - Handling of API endpoints and updating model
 barebones/app.py - Global Flask object creation
 barebones/init.py - DB initialization code
 barebones/run.py - Server running code
-test/test_api.py - Integration tests with API calls
+test/test\_api.py - Integration tests with API calls
 ```
 
 ## How to Run
+
+<a name="how-to-run"/>
 Required: Python 3.6+, SQLite3, Pip3
 
 In the root folder, run the folowing to install the required python modules:
