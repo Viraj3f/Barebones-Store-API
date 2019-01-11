@@ -326,8 +326,7 @@ transaction is cancelled.
     "shopping_cart_id": int, // parent shopping cart
     "quantity": int, // quantity of product request, must be greater than 0
     "product_id": int, // id of corresponding product
-    "product": self.product.as_dict()
-    "shopping_cart_entries": [Array of ShoppingCartEntry]
+    "product": Product
 }
 
 ```
