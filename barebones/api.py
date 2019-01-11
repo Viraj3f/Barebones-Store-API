@@ -281,7 +281,6 @@ def welcome():
 
 
 def get_jwt_from_request(request):
-    print(request.headers)
     auth = request.headers['Authorization'].split(" ")
     assert len(auth) == 2
     assert auth[0] == "Bearer"
