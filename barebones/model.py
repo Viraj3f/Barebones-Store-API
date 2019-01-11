@@ -1,7 +1,9 @@
 """
 Database Models the store
 """
-from barebones import db
+import jwt
+from datetime import datetime
+from barebones import db, app
 
 
 class Serializable:
@@ -34,6 +36,19 @@ class Producer(db.Model, Serializable):
             d["products"].append(product.as_dict())
 
         return d
+
+    def get_jwt_token(self):
+        return jwt.encode({
+                        'producer_id': self.id,
+                        'iat': datetime.utcnow()
+                    },
+                    app.config['SECRET_KEY'])
+
+    def verify_jwt_token(self, token):
+        payload = jwt.decode(
+                token, app.config['SECRET_KEY'], algorithms=['HS256'])
+
+        return 'producer_id' in payload and payload['producer_id'] == self.id
 
 
 class Product(db.Model, Serializable):
@@ -126,6 +141,18 @@ class ShoppingCart(db.Model, Serializable):
             self.cached_price = \
                 ShoppingCart.cached_price + quantity * product.price
             db.session.add(entry)
+
+    def get_jwt_token(self):
+        return jwt.encode({
+                        'cart_id': self.id,
+                        'iat': datetime.utcnow()
+                    },
+                    app.config['SECRET_KEY'])
+
+    def verify_jwt_token(self, token):
+        payload = jwt.decode(
+                token, app.config['SECRET_KEY'], algorithms=['HS256'])
+        return 'cart_id' in payload and payload['cart_id'] == self.id
 
 
 class ShoppingCartEntry(db.Model, Serializable):

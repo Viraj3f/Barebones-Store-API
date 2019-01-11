@@ -130,16 +130,22 @@ def test_create_product(client):
 def test_shopping_cart(client):
     response = client.post('/api/shopping_cart')
     assert response.status_code == 200
-    cart = response.get_json()
+    token = response.get_json()["auth_token"]
+    cart = response.get_json()["shopping_cart"]
+
     created = \
-        client.get('/api/shopping_cart/' + str(cart["id"])) \
+        client.get('/api/shopping_cart/' + str(cart["id"]),
+                   headers=create_auth_header(token)) \
         .get_json()
 
     assert cart["id"] == created["id"]
 
-    client.delete('/api/shopping_cart/' + str(cart["id"]))
+    client.delete('/api/shopping_cart/' + str(cart["id"]),
+                  headers=create_auth_header(token))
+
     assert client.get(
-            '/api/shopping_cart/' + str(cart["id"])).status_code == 404
+            '/api/shopping_cart/' + str(cart["id"]),
+            headers=create_auth_header(token)).status_code == 404
 
 
 def test_checkout(client):
@@ -159,7 +165,9 @@ def test_checkout(client):
             producer["producer"]["id"]).get_json()
 
     # Create shopping cart
-    cart = client.post('/api/shopping_cart').get_json()
+    response = client.post('/api/shopping_cart').get_json()
+    token = response["auth_token"]
+    cart = response["shopping_cart"]
 
     # Add to cart
     client.put(
@@ -168,6 +176,7 @@ def test_checkout(client):
                     "product_id": p1["id"],
                     "quantity": 3
                 }),
+            headers=create_auth_header(token),
             content_type='application/json')
 
     client.put(
@@ -176,9 +185,13 @@ def test_checkout(client):
                     "product_id": p2["id"],
                     "quantity": 1
                 }),
+            headers=create_auth_header(token),
             content_type='application/json')
 
-    cart = client.get('/api/shopping_cart/' + str(cart["id"])).get_json()
+    cart = client.get(
+            '/api/shopping_cart/' + str(cart["id"]),
+            headers=create_auth_header(token)
+            ).get_json()
     assert cart["cached_price"] == 500
 
     client.put(
@@ -187,9 +200,13 @@ def test_checkout(client):
                     "product_id": p1["id"],
                     "quantity": 1
                 }),
+            headers=create_auth_header(token),
             content_type='application/json')
 
-    cart = client.get('/api/shopping_cart/' + str(cart["id"])).get_json()
+    cart = client.get(
+            '/api/shopping_cart/' + str(cart["id"]),
+            headers=create_auth_header(token),
+            ).get_json()
     assert cart["cached_price"] == 300
 
     client.put(
@@ -198,12 +215,19 @@ def test_checkout(client):
                     "product_id": p1["id"],
                     "quantity": 0
                 }),
+            headers=create_auth_header(token),
             content_type='application/json')
 
-    cart = client.get('/api/shopping_cart/' + str(cart["id"])).get_json()
+    cart = client.get(
+            '/api/shopping_cart/' + str(cart["id"]),
+            headers=create_auth_header(token),
+            ).get_json()
     assert cart["cached_price"] == 200
 
-    client.post('/api/shopping_cart/' + str(cart["id"]) + '/checkout')
+    client.post(
+            '/api/shopping_cart/' + str(cart["id"]) + '/checkout',
+            headers=create_auth_header(token),
+            )
     p2 = client.get('/api/products/' + str(p2["id"])).get_json()
 
     assert p2["inventory_count"] == 16

@@ -27,7 +27,13 @@ def producers():
         db.session.add(producer)
         db.session.commit()
 
-        return jsonify(producer.as_dict()), 200
+        # Create JWT token
+        response = {
+            "producer": producer.as_dict(),
+            "auth_token": producer.get_jwt_token().decode('utf-8')
+        }
+
+        return jsonify(response), 200
     elif request.method == "GET":
         producers = []
         for producer in Producer.query.all():
@@ -39,7 +45,7 @@ def producers():
 @app.route("/api/producer/<int:producer_id>", methods=['GET'])
 def producer(producer_id):
     """
-        GET: Creates a new producer.
+        GET: Gets a producer and their products.
     """
     producer = Producer.query.get(producer_id)
 
@@ -57,14 +63,15 @@ def products():
              of availible products
     """
     if request.method == "POST":
+        token = get_jwt_from_request(request)
         content = request.get_json()
 
         # Check that the producer id corresponds to an actual
         # producer in the db.
         assert type(content["producer_id"]) == int
-        producer = Producer.query.get(content["producer_id"])
-        if producer is None:
-            return jsonify({"message": "Producer id does not exist"}), 401
+
+        if not authorize_producer(content["producer_id"], token):
+            return "", 401
 
         # Crete a product object and commit ot db
         product = Product(
@@ -119,7 +126,11 @@ def product(product_id):
         # Return the product recor
         return jsonify(product.as_dict()), 200
     elif request.method == "PUT":
+        token = get_jwt_from_request(request)
         content = request.get_json()
+        if not authorize_producer(content["producer_id"], token):
+            return "", 401
+
         if "title" in content:
             product.title = content["title"]
         if "price" in content:
@@ -131,6 +142,11 @@ def product(product_id):
         # Return the modified product recor
         return jsonify(product.as_dict()), 200
     elif request.method == "DELETE":
+        token = get_jwt_from_request(request)
+        content = request.get_json()
+        if not authorize_producer(content["producer_id"], token):
+            return "", 401
+
         db.session.delete(product)
         db.session.commit()
         return jsonify({
@@ -146,7 +162,13 @@ def shopping_carts():
     shopping_cart = ShoppingCart(cached_price=0)
     db.session.add(shopping_cart)
     db.session.commit()
-    return jsonify(shopping_cart.as_dict()), 200
+
+    response = {
+        "auth_token": shopping_cart.get_jwt_token().decode('utf-8'),
+        "shopping_cart": shopping_cart.as_dict()
+    }
+
+    return jsonify(response), 200
 
 
 @app.route("/api/shopping_cart/<int:shopping_cart_id>",
@@ -159,9 +181,13 @@ def shopping_cart(shopping_cart_id):
     """
     shopping_cart = ShoppingCart.query.get(shopping_cart_id)
     content = request.get_json()
+    token = get_jwt_from_request(request)
 
     if shopping_cart is None:
         return jsonify({}), 404
+
+    if not shopping_cart.verify_jwt_token(token):
+        return "", 401
 
     if request.method == "GET":
         arg = request.args.get('use-cache')
@@ -204,8 +230,13 @@ def checkout(shopping_cart_id):
         POST: Checkout a shopping cart
     """
     shopping_cart = ShoppingCart.query.get(shopping_cart_id)
+    token = get_jwt_from_request(request)
+
     if shopping_cart is None:
         return jsonify({"message": "Shopping card not found."}), 404
+
+    if not shopping_cart.verify_jwt_token(token):
+        return "", 401
 
     shopping_cart.recalculate_price()
     total_price = shopping_cart.cached_price
@@ -247,3 +278,22 @@ def checkout(shopping_cart_id):
 def welcome():
     # Simple welcome message for debugging
     return "Hello!"
+
+
+def get_jwt_from_request(request):
+    print(request.headers)
+    auth = request.headers['Authorization'].split(" ")
+    assert len(auth) == 2
+    assert auth[0] == "Bearer"
+    return auth[1]
+
+
+def authorize_producer(producer_id, token):
+    producer = Producer.query.get(producer_id)
+    if producer is None:
+        return False
+
+    if not producer.verify_jwt_token(token):
+        return False
+
+    return True

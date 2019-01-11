@@ -19,6 +19,7 @@ A barebones shopping API that supports multiple producers, products and shopping
 <a name="features"/>
 
 * Statless RESTful API.
+* Secure token-based authentication with JWT.
 * ORM that can be used with any production grade RDMS. (default: SQLite)
 * Supports producers, who can create an account and start creating products.
 * Producers can update the price, quantity and title of their products.
@@ -45,7 +46,12 @@ Note: all API endpoints will return a 500 error code on schema error.
 ```
 
 **Return Value**
-`Producer with code 200`
+```
+{
+   "auth_token": jwt_auth_token  // Client should store this
+   "producer": producer
+}
+```
 
 **Explanation**
 Creates a new producer and returns the schema for it.
@@ -116,6 +122,9 @@ Returns all products whose inventory count is greater than the specified paramet
 **Method**
 `POST`
 
+**Headers***
+`Authorization: Bearer AUTH_TOKEN`
+
 **Content Schema**
 ```
 {
@@ -129,6 +138,7 @@ Returns all products whose inventory count is greater than the specified paramet
 **Return Value**
 ```
 Product with code 200
+401 if invalid token
 ```
 
 **Explanation**
@@ -141,6 +151,9 @@ Creates a new product with the associated producer id.
 
 **Method**
 `PUT`
+
+**Headers***
+`Authorization: Bearer AUTH_TOKEN`
 
 **Content Schema**
 ```
@@ -155,6 +168,7 @@ Creates a new product with the associated producer id.
 ```
 Product with code 200 if id found
 {} with code 404 if id not found
+401 if invalid token
 ```
 
 **Explanation**
@@ -168,10 +182,14 @@ Overwrites the attributes of a product with the specified attributes in the cont
 **Method**
 `DELETE`
 
+**Headers**
+`Authorization: Bearer AUTH_TOKEN`
+
 **Return Value**
 ```
 Code 200 if id found
 {} with code 404 if id not found
+401 if invalid token
 ```
 
 **Explanation**
@@ -187,7 +205,11 @@ Code 200 if id found
 
 **Return Value**
 ```
-ShoppingCart with code 200
+{
+    "auth_token": AUTH_TOKEN,
+    "shopping_cart": ShoppingCart
+}
+with code 200
 ```
 
 **Explanation**
@@ -201,12 +223,16 @@ ShoppingCart with code 200
 **Method**
 `GET`
 
+**Headers**
+`Authorization: Bearer AUTH_TOKEN`
+
 **Params**
 `use-cache: int // 0 is false, anything else or unspecified is true.`
 
 **Return Value**
 ```
 ShoppingCart with code 200
+401 if invalid token
 ```
 
 **Explanation**
@@ -222,6 +248,9 @@ Returns the shopping cart with the cached price. If use-cache is set to False, t
 **Method**
 `DELETE`
 
+**Headers**
+`Authorization: Bearer AUTH_TOKEN`
+
 **Return Value**
 ```
 Message with code 200
@@ -231,6 +260,7 @@ Message with code 200
 ```
 Code 200 if id found
 {} with code 404 if id not found
+401 if invalid token
 ```
 
 ------
@@ -240,6 +270,9 @@ Code 200 if id found
 
 **Method**
 `PUT`
+
+**Headers**
+`Authorization: Bearer AUTH_TOKEN`
 
 **Content Schema**
 ```
@@ -254,6 +287,7 @@ Code 200 if id found
 ShoppingCart with 200 if valid method
 Message with code 404 if product id doesn't exist.
 Message with code 500 if quantity is greater than the number of availible products.
+401 if invalid token
 ```
 
 **Explanation**
@@ -271,10 +305,14 @@ cost is recalculated.
 **Method**
 `POST`
 
+**Headers**
+`Authorization: Bearer AUTH_TOKEN`
+
 **Return Value**
 ```
 Message with 200 if id found
 Message with code 404 if id doesn't exist or if a product in the cart is out of stock for the request number.
+401 if invalid token
 ```
 
 **Explanation**
