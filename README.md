@@ -367,3 +367,8 @@ To run the server, run:
 ```
 python runserver.py
 ```
+
+To run tests, `cd` into the `test` directory and run:
+```
+pytest
+```

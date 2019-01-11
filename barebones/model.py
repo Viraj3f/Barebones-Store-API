@@ -105,14 +105,17 @@ class ShoppingCart(db.Model, Serializable):
 
         for entry in self.shopping_cart_entries:
             if entry.product_id == product.id:
-                self.cached_price = \
-                    ShoppingCart.cached_price - entry.quantity * product.price
                 if quantity == 0:
+                    self.cached_price = \
+                        ShoppingCart.cached_price - \
+                        entry.quantity * product.price
                     db.session.delete(entry)
                 else:
-                    entry.quantity = quantity
                     self.cached_price = \
-                        ShoppingCart.cached_price + quantity * product.price
+                        ShoppingCart.cached_price + \
+                        product.price * (quantity - entry.quantity)
+                    entry.quantity = quantity
+
                 return
 
         if quantity > 0:
