@@ -5,8 +5,8 @@ Defintion and handling of API endpoints.
 import bcrypt
 from flask import request, jsonify
 
-from app import app, db
-from model import Producer, Product, ShoppingCart
+from barebones import app, db
+from barebones.model import Producer, Product, ShoppingCart
 
 
 @app.route("/api/producer", methods=['POST', 'GET'])

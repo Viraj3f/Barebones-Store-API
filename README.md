@@ -336,12 +336,15 @@ transaction is cancelled.
 <a name="source-code-explanation"/>
 
 ```
-barebones/model.py - The database models - Producer, Product, ShoppingCart, ShoppingCartEntry
-barebones/api.py - Handling of API endpoints and updating model
-barebones/app.py - Global Flask object creation
-barebones/init.py - DB initialization code
-barebones/run.py - Server running code
-test/test_api.py - Integration tests with API calls
+./initdb.py - DB initialization code
+./runserver.py - Server running code
+
+./barebones/
+        model.py - The database models - Producer, Product, ShoppingCart, ShoppingCartEntry
+        api.py - Handling of API endpoints and updating model
+
+./test/
+        test_api.py - Integration tests with API calls
 ```
 
 ## How to Run
@@ -356,11 +359,11 @@ pip install -r requirements.txt
 
 To initialize the database file, run:
 ```
-python barebones/init.py
+python initdb.py
 ```
 This only needs to be run once. By default, the `.db` file is stored in the `barebones` directory.
 
 To run the server, run:
 ```
-python barebones/run.py
+python runserver.py
 ```

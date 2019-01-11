@@ -12,3 +12,7 @@ DATABASE_URI = "sqlite:///./database.db"
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+# Circular import... because Flask
+import barebones.api
+import barebones.model

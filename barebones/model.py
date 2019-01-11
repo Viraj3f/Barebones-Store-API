@@ -1,7 +1,7 @@
 """
 Database Models the store
 """
-from app import db
+from barebones import db
 
 
 class Serializable:

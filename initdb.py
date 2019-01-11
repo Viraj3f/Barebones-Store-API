@@ -2,8 +2,7 @@
 Creates the database file and adds some stub data.
 """
 
-import model
-from app import db
+from barebones import db
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@ import json
 
 import sys
 sys.path.append("..")
-from run import app, db
+from barebones.app import app
 
 TEST_DATABASE_URI = "sqlite:///./test.db"
 TEST_SERVER_IP = "0.0.0.0"
@@ -12,13 +12,6 @@ client = app.test_client()
 
 
 def test_create_producer():
-    print("ypyp")
-    response = client.post(
-            '/',
-            data=json.dumps({
-                "id": 1,
-                "message": "New producer 'yoyo' succesfully created"
-             }),
-            content_type='application/json')
+    response = client.get('/')
     print(response)
     assert False
