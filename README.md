@@ -1,7 +1,7 @@
 # Barebones Shopping Store
 ### By Viraj Bangari
 
-A barebones shopping API that supports multiple producers, products and shopping carts.
+A barebones shopping API that supports multiple producers, products and shopping carts. This was written in two days.
 
 ## Table of Contents
 
