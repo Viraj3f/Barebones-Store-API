@@ -119,3 +119,62 @@ def test_shopping_cart(client):
     client.delete('/api/shopping_cart/' + str(cart["id"]))
     assert client.get(
             '/api/shopping_cart/' + str(cart["id"])).status_code == 404
+
+
+def test_checkout(client):
+    # Create producer
+    producer = create_producer(client, "uname", "password").get_json()
+
+    # Create Products
+    p1 = create_product(client, "p1", 10, 100, producer["id"]).get_json()
+    p2 = create_product(client, "p2", 17, 200, producer["id"]).get_json()
+
+    # Create shopping cart
+    cart = client.post('/api/shopping_cart').get_json()
+
+    # Add to cart
+    client.put(
+            '/api/shopping_cart/' + str(cart["id"]),
+            data=json.dumps({
+                    "product_id": p1["id"],
+                    "quantity": 3
+                }),
+            content_type='application/json')
+
+    client.put(
+            '/api/shopping_cart/' + str(cart["id"]),
+            data=json.dumps({
+                    "product_id": p2["id"],
+                    "quantity": 1
+                }),
+            content_type='application/json')
+
+    cart = client.get('/api/shopping_cart/' + str(cart["id"])).get_json()
+    assert cart["cached_price"] == 500
+
+    client.put(
+            '/api/shopping_cart/' + str(cart["id"]),
+            data=json.dumps({
+                    "product_id": p1["id"],
+                    "quantity": 1
+                }),
+            content_type='application/json')
+
+    cart = client.get('/api/shopping_cart/' + str(cart["id"])).get_json()
+    assert cart["cached_price"] == 300
+
+    client.put(
+            '/api/shopping_cart/' + str(cart["id"]),
+            data=json.dumps({
+                    "product_id": p1["id"],
+                    "quantity": 0
+                }),
+            content_type='application/json')
+
+    cart = client.get('/api/shopping_cart/' + str(cart["id"])).get_json()
+    assert cart["cached_price"] == 200
+
+    client.post('/api/shopping_cart/' + str(cart["id"]) + '/checkout')
+    p2 = client.get('/api/products/' + str(p2["id"])).get_json()
+
+    assert p2["inventory_count"] == 16
