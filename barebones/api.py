@@ -164,10 +164,8 @@ def shopping_cart(shopping_cart_id):
         return jsonify({}), 404
 
     if request.method == "GET":
-        print("OH HO")
         arg = request.args.get('use-cache')
         if arg and int(arg) == 0:
-            print("HEHE")
             shopping_cart.recalculate_price()
         db.session.commit()
 
@@ -200,12 +198,49 @@ def shopping_cart(shopping_cart_id):
 
 
 @app.route("/api/shopping_cart/<int:shopping_cart_id>/checkout",
-        methods=['POST'])
+           methods=['POST'])
 def checkout(shopping_cart_id):
     """
-        POST: Return a specific shopping cart
+        POST: Checkout a shopping cart
     """
-    return "Hello!"
+    shopping_cart = ShoppingCart.query.get(shopping_cart_id)
+    if shopping_cart is None:
+        return jsonify({"message": "Shopping card not found."}), 404
+
+    shopping_cart.recalculate_price()
+    total_price = shopping_cart.cached_price
+    for entry in shopping_cart.shopping_cart_entries:
+        product_id = entry.product_id
+
+        # Lock the product table
+        product = db.session \
+            .query(Product) \
+            .filter(Product.id == product_id) \
+            .with_for_update().one()
+
+        if product is None:
+            db.session.rollback()
+            return jsonify({"message": "Missing product"}), 400
+
+        if product.inventory_count < entry.quantity:
+            db.session.rollback()
+            return jsonify({"message": "Product out of stock."}), 400
+
+        product.inventory_count -= entry.quantity
+
+    db.session.commit()
+
+    # Clean up shopping cart resources
+    for entry in shopping_cart.shopping_cart_entries:
+        db.session.delete(entry)
+
+    db.session.delete(shopping_cart)
+    db.session.commit()
+
+    return jsonify({
+                "message": "Products ordered, ${} spent"
+                .format(total_price)
+            }), 200
 
 
 @app.route("/")

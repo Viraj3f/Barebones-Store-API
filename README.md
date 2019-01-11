@@ -26,8 +26,8 @@ A barebones shopping API that supports multiple producers, products and shopping
 * Allows for GETing all products, filtering by their quantity.
 * Allows the creation and deletion of shopping carts, which can contain multiple products and can have the total price cached.
 * Shopping carts do not require an account and are secured using API tokens.
-* Concurrency-safe when checking out a shopping cart.
-* Integration tested
+* Concurrency-safe when checking out a shopping cart using DB locks.
+* Integration tested.
 
 ## API Endpoints
 <a name="api-endpoints"/>
@@ -265,6 +265,25 @@ cost is recalculated.
 
 ------
 
+**Endpoint**
+`/api/shopping_cart/<int:shopping_cart_id>/checkout`
+
+**Method**
+`POST`
+
+**Return Value**
+```
+Message with 200 if id found
+Message with code 404 if id doesn't exist or if a product in the cart is out of stock for the request number.
+```
+
+**Explanation**
+```
+Calculates the total amount of money needed to complete a checkout, and accordingly modifies the database for
+the the product based on the ShoppingCartEntry values. If a single ShoppingCartEntry is invalid, the entire
+transaction is cancelled.
+```
+
 ## API Model Schema
 <a name="api-model-schema"/>
 
@@ -323,7 +342,7 @@ barebones/api.py - Handling of API endpoints and updating model
 barebones/app.py - Global Flask object creation
 barebones/init.py - DB initialization code
 barebones/run.py - Server running code
-test/test\_api.py - Integration tests with API calls
+test/test_api.py - Integration tests with API calls
 ```
 
 ## How to Run
@@ -344,5 +363,5 @@ This only needs to be run once. By default, the `.db` file is stored in the `bar
 
 To run the server, run:
 ```
-python barebones.run
+python barebones/run.py
 ```

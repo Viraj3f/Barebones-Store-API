@@ -44,7 +44,7 @@ class Product(db.Model, Serializable):
     id = db.Column(db.Integer, primary_key=True)
     producer_id = db.Column(db.Integer, db.ForeignKey("producer.id"))
     title = db.Column(db.String(255), nullable=False)
-    price = db.Column(db.Numeric(10, 2), nullable=False)
+    price = db.Column(db.Float(20), nullable=False)
     inventory_count = db.Column(db.Integer, nullable=False, default=0)
 
     @db.validates('price')
@@ -97,8 +97,6 @@ class ShoppingCart(db.Model, Serializable):
             quantity = entry.quantity
             price = entry.product.price
             new_price += quantity * price
-
-        print("NUU", new_price)
 
         self.cached_price = new_price
 
