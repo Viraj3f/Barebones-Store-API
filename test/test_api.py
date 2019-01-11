@@ -39,9 +39,18 @@ def create_producer(client, username, password):
             content_type='application/json')
 
 
-def create_product(client, title, inventory_count, price, producer_id):
+def create_auth_header(token):
+    return {
+        "Authorization": "Bearer {}".format(token)
+    }
+
+
+def create_product(
+        client, token, title, inventory_count, price, producer_id):
+
     return client.post(
             '/api/products',
+            headers=create_auth_header(token),
             data=json.dumps({
                 "title": title,
                 "producer_id": producer_id,
@@ -66,32 +75,44 @@ def test_create_producer(client):
     response = create_producer(client, "uname", "password")
     assert response.status_code == 200
     content = response.get_json()
-    assert content["username"] == "uname"
+    assert content["producer"]["username"] == "uname"
 
     created = \
-        client.get('/api/producer/' + str(content["id"])) \
+        client.get('/api/producer/' + str(content["producer"]["id"])) \
         .get_json()
-    assert created["id"] == content["id"]
-    assert created["username"] == content["username"]
+    assert created["id"] == content["producer"]["id"]
+    assert created["username"] == content["producer"]["username"]
 
 
 def test_create_product(client):
     response = create_producer(client, "uname1", "password")
     producer1 = response.get_json()
-    assert producer1["id"] == 1
+    assert producer1["producer"]["id"] == 1
 
     response = create_producer(client, "uname2", "password")
     producer2 = response.get_json()
-    assert producer2["id"] == 2
+    assert producer2["producer"]["id"] == 2
 
     assert 200 == create_product(
-            client, "prod1", 11, 100, producer1["id"]).status_code
+            client,
+            producer1["auth_token"],
+            "prod1", 11, 100,
+            producer1["producer"]["id"]).status_code
     assert 200 == create_product(
-            client, "prod2a", 13, 42, producer2["id"]).status_code
+            client,
+            producer2["auth_token"],
+            "prod2a", 13, 42,
+            producer2["producer"]["id"]).status_code
     assert 200 == create_product(
-            client, "prod2b", 14, 86, producer2["id"]).status_code
+            client,
+            producer2["auth_token"],
+            "prod2b", 14, 86,
+            producer2["producer"]["id"]).status_code
     assert 401 == create_product(
-            client, "stub", 10, 31, 991).status_code
+            client,
+            "",
+            "stub", 10, 31,
+            991).status_code
 
     body = client.get('/api/products').get_json()
     assert len(body["products"]) == 3
@@ -126,8 +147,16 @@ def test_checkout(client):
     producer = create_producer(client, "uname", "password").get_json()
 
     # Create Products
-    p1 = create_product(client, "p1", 10, 100, producer["id"]).get_json()
-    p2 = create_product(client, "p2", 17, 200, producer["id"]).get_json()
+    p1 = create_product(
+            client,
+            producer["auth_token"],
+            "p1", 10, 100,
+            producer["producer"]["id"]).get_json()
+    p2 = create_product(
+            client,
+            producer["auth_token"],
+            "p2", 17, 200,
+            producer["producer"]["id"]).get_json()
 
     # Create shopping cart
     cart = client.post('/api/shopping_cart').get_json()
